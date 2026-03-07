@@ -4,6 +4,12 @@ backend/venv
 backend/firebase-credentials.json
 backend/__pycache__
 backend/core/__pycache__
+backend/tests/__pycache__
+backend/.pytest_cache
+backend/agent/__pycache__
+backend/agent/tools/__pycache__
+backend/agent/venues/__pycache__
+backend/webhooks/__pycache__
 frontend/node_modules
 software-requirements-document.md
 .ruff_cache
