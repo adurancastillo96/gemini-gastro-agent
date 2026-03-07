@@ -6,3 +6,4 @@ backend/__pycache__
 backend/core/__pycache__
 frontend/node_modules
 software-requirements-document.md
+.ruff_cache
