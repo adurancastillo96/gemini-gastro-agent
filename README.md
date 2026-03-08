@@ -1,6 +1,6 @@
 # 🍽️ Gemini Gastro-Agent
 
-A cutting-edge Multimodal Live Agent with Human-in-the-Loop (HITL) capabilities, designed to revolutionize restaurant customer service. Built with the **Google Agent Development Kit (ADK)** and the **Gemini Multimodal Live API**.
+A cutting-edge Multimodal Live Agent with Human-in-the-Loop (HITL) capabilities, designed to revolutionize restaurant customer service. Built with the **Gemini Multimodal Live API** and optimized for ultra-low latency.
 
 ## 🚀 Overview
 
@@ -8,19 +8,25 @@ Gemini Gastro-Agent acts as an intelligent, real-time voice assistant for restau
 
 ### ✨ Architecture & Key Components
 
-1. **Frontend (Client Interface):** - Built with **React/Vite** and deployed on **Firebase Hosting**.
-   - Captures real-time audio via the user's microphone and streams it to the backend using WebSockets.
-   - Dynamically renders visual UI elements (Menu Cards with dish images, prices, and allergen info) based on the conversation.
+1. **Frontend (Client Interface):**
+   - Built with **React 19 / Vite** and deployed on **Firebase Hosting**.
+   - Captures real-time audio via `AudioWorklet` and streams it to the backend using WebSockets.
+   - Dynamically renders visual UI elements (Menu Cards with dish images, prices, and allergen info) inline based on the system's responses.
+   - Includes optional Google Sign-In for advanced features like HITL escalation and automated video reviews.
 
-2. **Backend (Core Engine):** - A high-performance **Python/FastAPI** server, containerized and deployed on **Google Cloud Run**.
-   - Maintains WebSocket connections with the frontend and handles seamless communication with the Gemini Multimodal Live API.
+2. **Backend (Core Engine):**
+   - A high-performance **Python/FastAPI** server, deployed on **Google Cloud Run**.
+   - Functions as an optimized WebSocket proxy between the client and the **Gemini Live API**.
+   - Utilizes the native **`google-genai` SDK** with Function Calling (zero-abstraction for minimal latency).
+   - Implements an **in-memory RAM cache** for sub-millisecond local tool executions.
 
-3. **The Brain (Google ADK & MCP):** - Powered by a Python-configured intelligent agent utilizing a Model Context Protocol (**MCP**) Toolset. Instead of rigid programming, the agent autonomously uses tools:
-     - `FirestoreTool`: Reads real-time menu data and dish availability.
-     - `TelegramTool`: Triggers a tripartite chat, escalating complex issues directly to the restaurant owner.
+3. **Data & Synchronization (Firestore):**
+   - **GCP Firestore** acts as the persistent source of truth for the multi-tenant catalogs.
+   - Venues, menus, owners, and employees are managed via isolated documents.
 
-4. **Backoffice (Telegram HITL):** - Owners interact with their restaurant system simply by texting a Telegram Bot (e.g., *"Paella is sold out"*).
-   - A webhook in the backend catches this message and instantly updates **GCP Firestore**, syncing the Agent's knowledge base in real-time.
+4. **Backoffice (Telegram HITL):**
+   - Owners and employees interact with their restaurant system simply by texting a Telegram Bot (e.g., *"Paella is sold out"*).
+   - A webhook in the backend securely catches this message, instantly updates Firestore, purges the RAM cache, and relays responses to active agent sessions if an escalation is in progress.
 
 ## 📂 Project Structure
 
@@ -29,42 +35,36 @@ This monorepo is organized to clearly separate the Python backend engine from th
 ```text
 gemini-gastro-agent/
 │
-├── backend/                        # 🧠 Python Engine (FastAPI + ADK)
-│   ├── Dockerfile                  # Deployment configuration for Google Cloud Run
-│   ├── requirements.txt            # Python dependencies (fastapi, websockets, google-genai...)
-│   ├── main.py                     # FastAPI server & WebSockets entry point
-│   ├── agent/
-│   │   ├── gastro_agent.py         # ADK Agent configuration & System Prompt
-│   │   └── tools.py                # MCP tools implementation (Telegram, Firestore)
-│   ├── core/
-│   │   ├── config.py               # Environment variables setup (.env)
-│   │   └── database.py             # GCP Firestore connection handler
-│   └── webhooks/
-│       └── telegram_webhook.py     # Listens to owner's messages & updates the DB
+├── backend/                        # 🧠 Python Engine (FastAPI)
+│   ├── Dockerfile
+│   ├── requirements.txt            # Minimal direct dependencies
+│   ├── main.py                     # FastAPI app & WebSocket routes
+│   ├── agent/                      # Gemini Live session manager & tools
+│   ├── core/                       # Config, database (Firestore), and RAM cache
+│   └── webhooks/                   # Telegram webhook endpoint
 │
 ├── frontend/                       # 📱 Client Interface (React/Vite)
-│   ├── firebase.json               # Firebase deployment configuration
-│   ├── package.json                # Node dependencies & scripts
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── LiveAudioVisualizer.jsx # Visual feedback for agent listening state
-│   │   │   └── MenuCard.jsx        # UI component for dishes, prices, and allergens
-│   │   ├── hooks/
-│   │   │   └── useGeminiLive.js    # WebSocket logic to connect with the backend
-│   │   └── App.jsx                 # Main application view
+│   │   ├── components/             # UI: ChatBubble, ProductCarousel, TalkButton, etc.
+│   │   ├── hooks/                  # AudioCapture & GeminiLive WebSocket logic
+│   │   ├── pages/                  # Venue chat page
+│   │   └── App.jsx
+│   ├── package.json
+│   └── firebase.json               # Firebase deployment configuration
 │
+├── software-requirements-document.md
 ├── architecture.png                # 🖼️ High-level architecture diagram
 └── README.md                       # 📝 Project documentation
 ```
 
 ## 🛠️ Tech Stack
 
-* **AI & Agent:** Google GenAI SDK, Google Agent Development Kit (ADK), Model Context Protocol (MCP)
-* **Backend:** Python, FastAPI, WebSockets, Docker
-* **Frontend:** React, Vite, TailwindCSS (or your CSS framework)
-* **Cloud & DB:** Google Cloud Run, GCP Firestore, Firebase Hosting
-* **Integrations:** Telegram Bot API
+* **AI & Agent:** Gemini Live API (`gemini-live-2.5-flash-native-audio`), `google-genai` SDK (Native Function Calling)
+* **Backend:** Python 3.11+, FastAPI, WebSockets, Uvicorn, Docker
+* **Frontend:** React 19, Vite, Web Audio API (`AudioWorklet`), Firebase Auth
+* **Cloud & DB:** Google Cloud Run, GCP Firestore, Firebase Hosting, Secret Manager
+* **Integrations:** Telegram Bot API (via Webhooks)
 
 ## 🏁 Getting Started
 
-continue...
+*(Documentation to be continued based on deployment and setup instructions...)*
