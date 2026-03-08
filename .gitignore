@@ -13,3 +13,5 @@ backend/webhooks/__pycache__
 frontend/node_modules
 software-requirements-document.md
 .ruff_cache
+deploy.sh
+undeploy.sh
